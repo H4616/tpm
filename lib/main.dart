@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
-//import pages
+import 'package:tpm_tugas3/LoginPage.dart';
+import 'package:tpm_tugas3/HomePage.dart';
+import 'package:tpm_tugas3/LoginService.dart'; // Mengimpor LoginService
 
 void main() {
   runApp(const SmartApp());
@@ -8,7 +10,6 @@ void main() {
 class SmartApp extends StatelessWidget {
   const SmartApp({super.key});
 
-  // root aplikasi
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -17,9 +18,23 @@ class SmartApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: const Color.fromARGB(255, 217, 255, 0)),
         useMaterial3: true,
       ),
-      home: //classlogin,
+      home: FutureBuilder<bool>(
+        future: LoginService().checkLoginStatus(), // Cek status login
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const CircularProgressIndicator();
+          }
+
+          if (snapshot.hasData && snapshot.data == true) {
+            return const HomePage(); // Jika sudah login, arahkan ke HomePage
+          } else {
+            return const LoginPages(); // Jika belum login, tampilkan LoginPage
+          }
+        },
+      ),
       routes: <String, WidgetBuilder>{
-        //route pages
+        '/login': (BuildContext context) => const LoginPages(),
+        '/home': (BuildContext context) => const HomePage(),
       },
     );
   }
