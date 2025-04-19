@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:tpm_tugas3/LoginPage.dart';
-import 'package:tpm_tugas3/HomePage.dart';
-import 'package:tpm_tugas3/LoginService.dart'; 
+import 'package:tpm_tugas3/view/LoginPage.dart';
+import 'package:tpm_tugas3/view/HomePage.dart';
+import 'package:tpm_tugas3/Service/LoginService.dart'; 
 
 void main() {
   runApp(const SmartApp());

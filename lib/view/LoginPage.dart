@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:tpm_tugas3/LoginService.dart'; // Mengimpor LoginService
+import 'package:tpm_tugas3/Service/LoginService.dart'; // Mengimpor LoginService
 
 class LoginPages extends StatefulWidget {
   const LoginPages({super.key});
