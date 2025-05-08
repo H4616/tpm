@@ -25,19 +25,20 @@ class _HomePageState extends State<HomePage> {
       });
     },
   );
-  
+
   final Jenisbilangan _jenisBilangan = Jenisbilangan();
   final LocationService _locationService = LocationService();
   final RecommendationService _recommendationService = RecommendationService();
 
   String _location = "Fetching location..."; // Lokasi perangkat
   String _numberType = ''; // Menyimpan hasil penentuan jenis bilangan
+  String _inputNumber = ''; // Menyimpan input angka dari pengguna
   String _stopwatchTime = '00:00:00';
 
   // Halaman-halaman yang dapat dipilih dari bottom navigation bar
   final List<Widget> _pages = [
     const AboutPage(), // Halaman About
-    const Center(child: Text('Home Page')), // Halaman Home (akan diubah dengan fitur)
+    const Center(child: Text('Home Page')), // Halaman Home
     ListAnggotaPage(), // Halaman ListAnggota
   ];
 
@@ -65,9 +66,7 @@ class _HomePageState extends State<HomePage> {
         });
       },
     );
-
     _getLocation(); // Ambil lokasi saat halaman pertama kali dimuat
-    _numberType = _jenisBilangan.checkJenisbilangan(5); // Misal kita periksa jenis bilangan untuk 5
   }
 
   @override
@@ -87,6 +86,13 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
+  // Fungsi untuk memeriksa jenis bilangan
+  void _checkNumberType() {
+    setState(() {
+      _numberType = _jenisBilangan.checkNumberType(_inputNumber); // Memanggil fungsi checkNumberType
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -98,6 +104,7 @@ class _HomePageState extends State<HomePage> {
             onPressed: () => _logout(context),
           ),
         ],
+        backgroundColor: Colors.blueAccent,
       ),
       body: _selectedIndex == 1
           ? _buildHomePage() // Halaman Home dengan fitur
@@ -129,8 +136,11 @@ class _HomePageState extends State<HomePage> {
           children: [
             // Fitur Stopwatch dalam Card
             Card(
-              elevation: 4,
+              elevation: 6,
               margin: const EdgeInsets.only(bottom: 20),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(15),
+              ),
               child: Padding(
                 padding: const EdgeInsets.all(16.0),
                 child: Column(
@@ -138,22 +148,40 @@ class _HomePageState extends State<HomePage> {
                   children: [
                     Text(
                       'Stopwatch: $_stopwatchTime',
-                      style: TextStyle(fontSize: 20),
+                      style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                     ),
                     Row(
                       children: [
                         ElevatedButton(
                           onPressed: _stopwatchService.start,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.blueAccent,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                          ),
                           child: const Text('Start'),
                         ),
-                        SizedBox(width: 10),
+                        const SizedBox(width: 10),
                         ElevatedButton(
                           onPressed: _stopwatchService.stop,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.redAccent,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                          ),
                           child: const Text('Stop'),
                         ),
-                        SizedBox(width: 10),
+                        const SizedBox(width: 10),
                         ElevatedButton(
                           onPressed: _stopwatchService.reset,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.green,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                          ),
                           child: const Text('Reset'),
                         ),
                       ],
@@ -165,34 +193,72 @@ class _HomePageState extends State<HomePage> {
 
             // Fitur Jenis Bilangan dalam Card
             Card(
-              elevation: 4,
+              elevation: 6,
               margin: const EdgeInsets.only(bottom: 20),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(15),
+              ),
               child: Padding(
                 padding: const EdgeInsets.all(16.0),
-                child: Text(
-                  'Number Type (5): $_numberType',
-                  style: TextStyle(fontSize: 20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Input Field untuk angka
+                    TextField(
+                      keyboardType: TextInputType.number, // Mengatur keyboard untuk input angka
+                      onChanged: (value) {
+                        setState(() {
+                          _inputNumber = value; // Menyimpan input yang dimasukkan pengguna
+                        });
+                      },
+                      decoration: InputDecoration(
+                        labelText: 'Enter a number',
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+
+                    // Tombol untuk mengecek jenis bilangan
+                    ElevatedButton(
+                      onPressed: _checkNumberType,
+                      child: const Text('Check Number Type'),
+                    ),
+
+                    // Menampilkan jenis bilangan
+                    Text(
+                      'Number Type: $_numberType', // Menampilkan hasil jenis bilangan (Even/Odd)
+                      style: const TextStyle(fontSize: 18),
+                    ),
+                  ],
                 ),
               ),
             ),
 
             // Fitur Lokasi dalam Card
             Card(
-              elevation: 4,
+              elevation: 6,
               margin: const EdgeInsets.only(bottom: 20),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(15),
+              ),
               child: Padding(
                 padding: const EdgeInsets.all(16.0),
                 child: Text(
                   'Location: $_location',
-                  style: TextStyle(fontSize: 20),
+                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                 ),
               ),
             ),
 
             // Fitur Daftar Situs Rekomendasi dalam Card
             Card(
-              elevation: 4,
+              elevation: 6,
               margin: const EdgeInsets.only(bottom: 20),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(15),
+              ),
               child: Padding(
                 padding: const EdgeInsets.all(16.0),
                 child: Column(
@@ -200,10 +266,10 @@ class _HomePageState extends State<HomePage> {
                   children: [
                     const Text(
                       'Recommended Sites:',
-                      style: TextStyle(fontSize: 20),
+                      style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                     ),
                     ..._recommendationService.getRecommendedSites().map((site) {
-                      return Text(site, style: TextStyle(fontSize: 16));
+                      return Text(site, style: TextStyle(fontSize: 18));
                     }).toList(),
                   ],
                 ),

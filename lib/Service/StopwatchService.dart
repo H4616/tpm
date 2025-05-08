@@ -13,7 +13,11 @@ class StopwatchService {
   void _updateTime() {
     final seconds = _stopwatch.elapsed.inSeconds;
     final minutes = seconds ~/ 60;
-    final hours = minutes ~/ 60;
+    final hours = minutes ~/ 60; 
+    
+    // Mengatur jam agar tidak lebih dari 23
+    // hours = hours % 24;
+
     _time = '${hours.toString().padLeft(2, '0')}:'
         '${(minutes % 60).toString().padLeft(2, '0')}:'
         '${(seconds % 60).toString().padLeft(2, '0')}';
