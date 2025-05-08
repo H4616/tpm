@@ -6,6 +6,7 @@ import '../Service/StopwatchService.dart';
 import 'package:tpm_tugas3/Service/JenisBilanganService.dart';
 import '../Service/LocationService.dart';
 import '../Service/RecommendationService.dart';
+import '../Service/KonversiService.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -29,11 +30,16 @@ class _HomePageState extends State<HomePage> {
   final Jenisbilangan _jenisBilangan = Jenisbilangan();
   final LocationService _locationService = LocationService();
   final RecommendationService _recommendationService = RecommendationService();
+  final TimeConverter _konversiService = TimeConverter();
 
   String _location = "Fetching location..."; // Lokasi perangkat
   String _numberType = ''; // Menyimpan hasil penentuan jenis bilangan
   String _inputNumber = ''; // Menyimpan input angka dari pengguna
   String _stopwatchTime = '00:00:00';
+
+  // Konversi waktu
+  String _convertedTime = ''; // Menyimpan hasil konversi waktu
+  String _yearsInput = ''; // Menyimpan input Tahun
 
   // Halaman-halaman yang dapat dipilih dari bottom navigation bar
   final List<Widget> _pages = [
@@ -90,6 +96,13 @@ class _HomePageState extends State<HomePage> {
   void _checkNumberType() {
     setState(() {
       _numberType = _jenisBilangan.checkNumberType(_inputNumber); // Memanggil fungsi checkNumberType
+    });
+  }
+
+  // Fungsi untuk mengonversi Tahun
+  void _convertTime() {
+    setState(() {
+      _convertedTime = _konversiService.convertYears(int.tryParse(_yearsInput) ?? 0); // Mengonversi detik ke format waktu
     });
   }
 
@@ -229,6 +242,51 @@ class _HomePageState extends State<HomePage> {
                     // Menampilkan jenis bilangan
                     Text(
                       'Number Type: $_numberType', // Menampilkan hasil jenis bilangan (Even/Odd)
+                      style: const TextStyle(fontSize: 18),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+
+            // Fitur Konversi Waktu dalam Card
+            Card(
+              elevation: 6,
+              margin: const EdgeInsets.only(bottom: 20),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(15),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Input Field 
+                    TextField(
+                      keyboardType: TextInputType.number, // Mengatur keyboard untuk input angka
+                      onChanged: (value) {
+                        setState(() {
+                          _yearsInput = value; // Menyimpan input tahun dari pengguna
+                        });
+                      },
+                      decoration: InputDecoration(
+                        labelText: 'Enter Years',
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+
+                    // Tombol untuk mengonversi detik
+                    ElevatedButton(
+                      onPressed: _convertTime,
+                      child: const Text('Convert Time'),
+                    ),
+
+                    // Menampilkan hasil konversi waktu
+                    Text(
+                      'Converted Time: $_convertedTime', // Menampilkan hasil konversi waktu
                       style: const TextStyle(fontSize: 18),
                     ),
                   ],
