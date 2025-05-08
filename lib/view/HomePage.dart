@@ -102,7 +102,7 @@ class _HomePageState extends State<HomePage> {
   // Fungsi untuk mengonversi Tahun
   void _convertTime() {
     setState(() {
-      _convertedTime = _konversiService.convertYears(int.tryParse(_yearsInput) ?? 0); // Mengonversi detik ke format waktu
+      _convertedTime = _konversiService.convertYears(double.tryParse(_yearsInput) ?? 0.0); // Mengonversi detik ke format waktu
     });
   }
 
