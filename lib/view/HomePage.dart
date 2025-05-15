@@ -34,6 +34,7 @@ class _HomePageState extends State<HomePage> {
   final RecommendationService _recommendationService = RecommendationService();
   late List<Map<String, dynamic>> _recommendedSites;
   final TimeConverter _konversiService = TimeConverter();
+  final TextEditingController _controller = TextEditingController();
 
   String _location = "Fetching location..."; // Lokasi perangkat
   String _numberType = ''; // Menyimpan hasil penentuan jenis bilangan
@@ -79,7 +80,9 @@ class _HomePageState extends State<HomePage> {
       },
     );
     _getLocation(); // Ambil lokasi saat halaman pertama kali dimuat
-    _recommendedSites = _recommendationService.getRecommendedSites(); // Ambil daftar situs rekomendasi
+    _recommendedSites =
+        _recommendationService
+            .getRecommendedSites(); // Ambil daftar situs rekomendasi
   }
 
   @override
@@ -120,7 +123,16 @@ class _HomePageState extends State<HomePage> {
   // Fungsi untuk toggle favorit
   void _toggleFavorite(int index) {
     setState(() {
-      _recommendedSites[index]['isFavorite'] = !_recommendedSites[index]['isFavorite'];
+      _recommendedSites[index]['isFavorite'] =
+          !_recommendedSites[index]['isFavorite'];
+    });
+  }
+
+  // Fungsi reset bilangan
+  void _resetbilangan() {
+    setState(() {
+      _controller.clear(); // Menghapus teks yang ada pada TextField
+      _numberType = ''; // Mengosongkan hasil jenis bilangan
     });
   }
 
@@ -240,8 +252,11 @@ class _HomePageState extends State<HomePage> {
                   children: [
                     // Input Field untuk angka
                     TextField(
+                      controller:
+                          _controller, // Menggunakan controller untuk mengelola input
                       keyboardType:
-                          TextInputType.number, // Mengatur keyboard untuk input angka
+                          TextInputType
+                              .number, // Mengatur keyboard untuk input angka
                       onChanged: (value) {
                         setState(() {
                           _inputNumber =
@@ -258,9 +273,20 @@ class _HomePageState extends State<HomePage> {
                     const SizedBox(height: 20),
 
                     // Tombol untuk mengecek jenis bilangan
-                    ElevatedButton(
-                      onPressed: _checkNumberType,
-                      child: const Text('Check Number Type'),
+                    Row(
+                      children: [
+                        ElevatedButton(
+                          onPressed: _checkNumberType,
+                          child: const Text('Check Number Type'),
+                        ),
+                        const SizedBox(
+                          width: 16,
+                        ), // Jarak antara tombol check dan reset
+                        ElevatedButton(
+                          onPressed: _resetbilangan,
+                          child: const Text('Reset'),
+                        ),
+                      ],
                     ),
 
                     // Menampilkan jenis bilangan
@@ -288,7 +314,8 @@ class _HomePageState extends State<HomePage> {
                     // Input Field
                     TextField(
                       keyboardType:
-                          TextInputType.number, // Mengatur keyboard untuk input angka
+                          TextInputType
+                              .number, // Mengatur keyboard untuk input angka
                       onChanged: (value) {
                         setState(() {
                           _yearsInput =
@@ -327,30 +354,33 @@ class _HomePageState extends State<HomePage> {
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(15),
               ),
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Location: $_location',
-                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Location: $_location',
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    SizedBox(height: 10),
+                    ElevatedButton(
+                      onPressed: () {
+                        // Arahkan ke MapScreen ketika tombol ditekan
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => MapScreen()),
+                        );
+                      },
+                      child: Text("Open Map"),
+                    ),
+                  ],
                 ),
-                SizedBox(height: 10),
-                ElevatedButton(
-                  onPressed: () {
-                    // Arahkan ke MapScreen ketika tombol ditekan
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => MapScreen()),
-                    );
-                  },
-                  child: Text("Open Map"),
-                ),
-              ],
+              ),
             ),
-          ),
-        ),
 
             // Fitur Daftar Situs Rekomendasi dalam Card
             Card(
@@ -366,7 +396,10 @@ class _HomePageState extends State<HomePage> {
                   children: [
                     const Text(
                       'Recommended Sites:',
-                      style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                     // Menampilkan daftar situs dengan gambar favicon dan tombol favorit
                     ..._recommendedSites.map((site) {
@@ -382,17 +415,24 @@ class _HomePageState extends State<HomePage> {
                           subtitle: Text(site['url']),
                           trailing: IconButton(
                             icon: Icon(
-                              site['isFavorite'] ? Icons.favorite : Icons.favorite_border,
-                              color: site['isFavorite'] ? Colors.red : Colors.grey,
+                              site['isFavorite']
+                                  ? Icons.favorite
+                                  : Icons.favorite_border,
+                              color:
+                                  site['isFavorite'] ? Colors.red : Colors.grey,
                             ),
-                            onPressed: () => _toggleFavorite(_recommendedSites.indexOf(site)), // Toggle favorit
+                            onPressed:
+                                () => _toggleFavorite(
+                                  _recommendedSites.indexOf(site),
+                                ), // Toggle favorit
                           ),
                           onTap: () {
                             // Menavigasi ke situs web jika diklik
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (context) => WebViewPage(url: site['url']),
+                                builder:
+                                    (context) => WebViewPage(url: site['url']),
                               ),
                             );
                           },

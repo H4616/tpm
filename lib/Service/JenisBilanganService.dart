@@ -1,3 +1,5 @@
+import 'package:flutter/widgets.dart';
+
 class Jenisbilangan{
     // Fungsi untuk memeriksa apakah angka tersebut bilangan prima
   bool isPrime(int number) {
@@ -59,4 +61,6 @@ class Jenisbilangan{
       return 'Invalid Input'; 
     }
   }
+
 }
+
