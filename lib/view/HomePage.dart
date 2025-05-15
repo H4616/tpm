@@ -34,7 +34,9 @@ class _HomePageState extends State<HomePage> {
   final RecommendationService _recommendationService = RecommendationService();
   late List<Map<String, dynamic>> _recommendedSites;
   final TimeConverter _konversiService = TimeConverter();
-  final TextEditingController _controller = TextEditingController();
+  final TextEditingController _controllerangka = TextEditingController();
+  final TextEditingController _controllerwaktu = TextEditingController();
+   
 
   String _location = "Fetching location..."; // Lokasi perangkat
   String _numberType = ''; // Menyimpan hasil penentuan jenis bilangan
@@ -80,9 +82,7 @@ class _HomePageState extends State<HomePage> {
       },
     );
     _getLocation(); // Ambil lokasi saat halaman pertama kali dimuat
-    _recommendedSites =
-        _recommendationService
-            .getRecommendedSites(); // Ambil daftar situs rekomendasi
+    _recommendationService.initialize(); // Ambil daftar situs rekomendasi
   }
 
   @override
@@ -120,20 +120,25 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
-  // Fungsi untuk toggle favorit
-  void _toggleFavorite(int index) {
+  // Fungsi reset bilangan
+  void _resetangka() {
     setState(() {
-      _recommendedSites[index]['isFavorite'] =
-          !_recommendedSites[index]['isFavorite'];
+      _controllerangka.clear(); // Menghapus teks yang ada pada TextField
+      _numberType = ''; // Mengosongkan hasil jenis bilangan
     });
   }
 
-  // Fungsi reset bilangan
-  void _resetbilangan() {
+  void _resetwaktu() {
     setState(() {
-      _controller.clear(); // Menghapus teks yang ada pada TextField
-      _numberType = ''; // Mengosongkan hasil jenis bilangan
+      _controllerwaktu.clear(); // Menghapus teks yang ada pada TextField
+      _convertedTime = ''; // Mengosongkan hasil konversi waktu
     });
+  }
+
+  // Fungsi untuk toggle favorit
+  void _toggleFavorite(int index) async {
+    await _recommendationService.toggleFavorite(index); // Menyimpan status favorit
+    setState(() {});  // Memperbarui UI setelah status favorit diubah
   }
 
   @override
@@ -253,7 +258,7 @@ class _HomePageState extends State<HomePage> {
                     // Input Field untuk angka
                     TextField(
                       controller:
-                          _controller, // Menggunakan controller untuk mengelola input
+                          _controllerangka, // Menggunakan controller untuk mengelola input
                       keyboardType:
                           TextInputType
                               .number, // Mengatur keyboard untuk input angka
@@ -283,7 +288,7 @@ class _HomePageState extends State<HomePage> {
                           width: 16,
                         ), // Jarak antara tombol check dan reset
                         ElevatedButton(
-                          onPressed: _resetbilangan,
+                          onPressed: _resetangka,
                           child: const Text('Reset'),
                         ),
                       ],
@@ -311,8 +316,11 @@ class _HomePageState extends State<HomePage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    
                     // Input Field
                     TextField(
+                       controller:
+                          _controllerwaktu, // Menggunakan controller untuk mengelola input
                       keyboardType:
                           TextInputType
                               .number, // Mengatur keyboard untuk input angka
@@ -332,11 +340,21 @@ class _HomePageState extends State<HomePage> {
                     const SizedBox(height: 20),
 
                     // Tombol untuk mengonversi detik
-                    ElevatedButton(
+                    Row(
+                      children: [
+                        ElevatedButton(
                       onPressed: _convertTime,
                       child: const Text('Convert Time'),
+                        ),
+                        const SizedBox(
+                          width: 16,
+                        ), // Jarak antara tombol check dan reset
+                        ElevatedButton(
+                          onPressed: _resetwaktu,
+                          child: const Text('Reset'),
+                        ),
+                      ],
                     ),
-
                     // Menampilkan hasil konversi waktu
                     Text(
                       'Converted Time: $_convertedTime', // Menampilkan hasil konversi waktu
@@ -402,43 +420,52 @@ class _HomePageState extends State<HomePage> {
                       ),
                     ),
                     // Menampilkan daftar situs dengan gambar favicon dan tombol favorit
-                    ..._recommendedSites.map((site) {
-                      return Card(
-                        margin: const EdgeInsets.symmetric(vertical: 8),
-                        child: ListTile(
-                          leading: Image.network(
-                            site['favicon'], // Menampilkan favicon
-                            width: 40,
-                            height: 40,
-                          ),
-                          title: Text(site['name']),
-                          subtitle: Text(site['url']),
-                          trailing: IconButton(
-                            icon: Icon(
-                              site['isFavorite']
-                                  ? Icons.favorite
-                                  : Icons.favorite_border,
-                              color:
-                                  site['isFavorite'] ? Colors.red : Colors.grey,
-                            ),
-                            onPressed:
-                                () => _toggleFavorite(
-                                  _recommendedSites.indexOf(site),
-                                ), // Toggle favorit
-                          ),
-                          onTap: () {
-                            // Menavigasi ke situs web jika diklik
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder:
-                                    (context) => WebViewPage(url: site['url']),
+                    FutureBuilder(
+                      future: _recommendationService.loadFavorites(), // Memuat status favorit
+                      builder: (context, snapshot) {
+                        if (snapshot.connectionState == ConnectionState.waiting) {
+                          return const Center(child: CircularProgressIndicator());
+                        }
+
+                        _recommendedSites = _recommendationService.getRecommendedSites();
+                        return ListView.builder(
+                          shrinkWrap: true, // Untuk menghindari overflow
+                          physics: NeverScrollableScrollPhysics(), // Non-scrollable
+                          itemCount: _recommendedSites.length,
+                          itemBuilder: (context, index) {
+                            var site = _recommendedSites[index];
+                            return Card(
+                              margin: const EdgeInsets.symmetric(vertical: 8),
+                              child: ListTile(
+                                leading: Image.network(
+                                  site['favicon'], // Menampilkan favicon
+                                  width: 40,
+                                  height: 40,
+                                ),
+                                title: Text(site['name']),
+                                subtitle: Text(site['url']),
+                                trailing: IconButton(
+                                  icon: Icon(
+                                    site['isFavorite'] ? Icons.favorite : Icons.favorite_border,
+                                    color: site['isFavorite'] ? Colors.red : Colors.grey,
+                                  ),
+                                  onPressed: () => _toggleFavorite(index), // Toggle favorit
+                                ),
+                                onTap: () {
+                                  // Menavigasi ke situs web jika diklik
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => WebViewPage(url: site['url']),
+                                    ),
+                                  );
+                                },
                               ),
                             );
                           },
-                        ),
-                      );
-                    }).toList(),
+                        );
+                      },
+                    ),
                   ],
                 ),
               ),

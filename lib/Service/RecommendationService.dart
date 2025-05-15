@@ -1,3 +1,4 @@
+// recommendation_service.dart
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -47,5 +48,10 @@ class RecommendationService {
 
   List<Map<String, dynamic>> getRecommendedSites() {
     return _sites;
+  }
+
+  // Memuat situs favorit ketika aplikasi dimulai
+  Future<void> initialize() async {
+    await loadFavorites();
   }
 }
