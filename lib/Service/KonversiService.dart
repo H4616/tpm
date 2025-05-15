@@ -1,5 +1,4 @@
 class TimeConverter {
-  // Fungsi untuk mengonversi tahun ke bulan, hari, jam, menit, dan detik
   String convertYears(double years) {
     // Menghitung bulan, hari, jam, menit, detik berdasarkan tahun
     double totalDays = years * 365.25;  // Menghitung total hari berdasarkan tahun (365.25 untuk memperhitungkan tahun kabisat)
@@ -10,7 +9,7 @@ class TimeConverter {
     int minutes = (hours * 60).toInt(); // Mengonversi jam ke menit
     int seconds = (minutes * 60).toInt(); // Mengonversi menit ke detik
 
-    // Mengembalikan hasil konversi dalam format yang lebih mudah dibaca
+    
     return '$years Tahun, $months Bulan, $days Hari, $hours Jam, $minutes Menit, $seconds Detik';
   }
 

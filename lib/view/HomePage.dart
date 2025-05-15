@@ -5,8 +5,10 @@ import 'package:tpm_tugas3/Service/LogoutService.dart';
 import '../Service/StopwatchService.dart';
 import 'package:tpm_tugas3/Service/JenisBilanganService.dart';
 import '../Service/LocationService.dart';
-import '../Service/RecommendationService.dart';
 import '../Service/KonversiService.dart';
+import 'package:tpm_tugas3/view/WebViewPage.dart';
+import '../Service/RecommendationService.dart';
+import 'package:tpm_tugas3/view/MapPage.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -30,6 +32,7 @@ class _HomePageState extends State<HomePage> {
   final Jenisbilangan _jenisBilangan = Jenisbilangan();
   final LocationService _locationService = LocationService();
   final RecommendationService _recommendationService = RecommendationService();
+  late List<Map<String, dynamic>> _recommendedSites;
   final TimeConverter _konversiService = TimeConverter();
 
   String _location = "Fetching location..."; // Lokasi perangkat
@@ -59,7 +62,10 @@ class _HomePageState extends State<HomePage> {
   void _logout(BuildContext context) async {
     LogoutService logoutService = LogoutService();
     await logoutService.logout(); // Menghapus status login
-    Navigator.pushReplacementNamed(context, '/login'); // Navigasi kembali ke LoginPage
+    Navigator.pushReplacementNamed(
+      context,
+      '/login',
+    ); // Navigasi kembali ke LoginPage
   }
 
   @override
@@ -73,6 +79,7 @@ class _HomePageState extends State<HomePage> {
       },
     );
     _getLocation(); // Ambil lokasi saat halaman pertama kali dimuat
+    _recommendedSites = _recommendationService.getRecommendedSites(); // Ambil daftar situs rekomendasi
   }
 
   @override
@@ -95,14 +102,25 @@ class _HomePageState extends State<HomePage> {
   // Fungsi untuk memeriksa jenis bilangan
   void _checkNumberType() {
     setState(() {
-      _numberType = _jenisBilangan.checkNumberType(_inputNumber); // Memanggil fungsi checkNumberType
+      _numberType = _jenisBilangan.checkNumberType(
+        _inputNumber,
+      ); // Memanggil fungsi checkNumberType
     });
   }
 
   // Fungsi untuk mengonversi Tahun
   void _convertTime() {
     setState(() {
-      _convertedTime = _konversiService.convertYears(double.tryParse(_yearsInput) ?? 0.0); // Mengonversi detik ke format waktu
+      _convertedTime = _konversiService.convertYears(
+        double.tryParse(_yearsInput) ?? 0.0,
+      ); // Mengonversi detik ke format waktu
+    });
+  }
+
+  // Fungsi untuk toggle favorit
+  void _toggleFavorite(int index) {
+    setState(() {
+      _recommendedSites[index]['isFavorite'] = !_recommendedSites[index]['isFavorite'];
     });
   }
 
@@ -119,9 +137,10 @@ class _HomePageState extends State<HomePage> {
         ],
         backgroundColor: Colors.blueAccent,
       ),
-      body: _selectedIndex == 1
-          ? _buildHomePage() // Halaman Home dengan fitur
-          : _pages[_selectedIndex], // Menampilkan halaman lain berdasarkan BottomNavigationBar
+      body:
+          _selectedIndex == 1
+              ? _buildHomePage() // Halaman Home dengan fitur
+              : _pages[_selectedIndex], // Menampilkan halaman lain berdasarkan BottomNavigationBar
       bottomNavigationBar: BottomNavigationBar(
         backgroundColor: Colors.green, // Warna hijau untuk background
         items: const <BottomNavigationBarItem>[
@@ -161,7 +180,10 @@ class _HomePageState extends State<HomePage> {
                   children: [
                     Text(
                       'Stopwatch: $_stopwatchTime',
-                      style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                     Row(
                       children: [
@@ -218,10 +240,12 @@ class _HomePageState extends State<HomePage> {
                   children: [
                     // Input Field untuk angka
                     TextField(
-                      keyboardType: TextInputType.number, // Mengatur keyboard untuk input angka
+                      keyboardType:
+                          TextInputType.number, // Mengatur keyboard untuk input angka
                       onChanged: (value) {
                         setState(() {
-                          _inputNumber = value; // Menyimpan input yang dimasukkan pengguna
+                          _inputNumber =
+                              value; // Menyimpan input yang dimasukkan pengguna
                         });
                       },
                       decoration: InputDecoration(
@@ -261,12 +285,14 @@ class _HomePageState extends State<HomePage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Input Field 
+                    // Input Field
                     TextField(
-                      keyboardType: TextInputType.number, // Mengatur keyboard untuk input angka
+                      keyboardType:
+                          TextInputType.number, // Mengatur keyboard untuk input angka
                       onChanged: (value) {
                         setState(() {
-                          _yearsInput = value; // Menyimpan input tahun dari pengguna
+                          _yearsInput =
+                              value; // Menyimpan input tahun dari pengguna
                         });
                       },
                       decoration: InputDecoration(
@@ -301,14 +327,30 @@ class _HomePageState extends State<HomePage> {
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(15),
               ),
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Text(
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
                   'Location: $_location',
                   style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                 ),
-              ),
+                SizedBox(height: 10),
+                ElevatedButton(
+                  onPressed: () {
+                    // Arahkan ke MapScreen ketika tombol ditekan
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => MapScreen()),
+                    );
+                  },
+                  child: Text("Open Map"),
+                ),
+              ],
             ),
+          ),
+        ),
 
             // Fitur Daftar Situs Rekomendasi dalam Card
             Card(
@@ -326,8 +368,36 @@ class _HomePageState extends State<HomePage> {
                       'Recommended Sites:',
                       style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                     ),
-                    ..._recommendationService.getRecommendedSites().map((site) {
-                      return Text(site, style: TextStyle(fontSize: 18));
+                    // Menampilkan daftar situs dengan gambar favicon dan tombol favorit
+                    ..._recommendedSites.map((site) {
+                      return Card(
+                        margin: const EdgeInsets.symmetric(vertical: 8),
+                        child: ListTile(
+                          leading: Image.network(
+                            site['favicon'], // Menampilkan favicon
+                            width: 40,
+                            height: 40,
+                          ),
+                          title: Text(site['name']),
+                          subtitle: Text(site['url']),
+                          trailing: IconButton(
+                            icon: Icon(
+                              site['isFavorite'] ? Icons.favorite : Icons.favorite_border,
+                              color: site['isFavorite'] ? Colors.red : Colors.grey,
+                            ),
+                            onPressed: () => _toggleFavorite(_recommendedSites.indexOf(site)), // Toggle favorit
+                          ),
+                          onTap: () {
+                            // Menavigasi ke situs web jika diklik
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => WebViewPage(url: site['url']),
+                              ),
+                            );
+                          },
+                        ),
+                      );
                     }).toList(),
                   ],
                 ),
